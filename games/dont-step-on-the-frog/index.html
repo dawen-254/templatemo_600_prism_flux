@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Don't Step on the Frog | Carlos Fordham</title>
+<style>
+  :root {
+    --grass-a: #7fd858;
+    --grass-b: #6cc94a;
+    --ui-bg: rgba(20, 30, 20, 0.82);
+    --accent: #ffd166;
+    --danger: #ff4d4d;
+    --text: #f4fff0;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  .portfolio-nav { position: fixed; top: 14px; left: 14px; z-index: 30; display: flex; gap: 10px; flex-wrap: wrap; }
+  .portfolio-nav a { color: var(--text); text-decoration: none; font-weight: 800; font-size: 13px; padding: 9px 12px; border-radius: 999px; background: rgba(20, 30, 20, 0.78); border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 6px 18px rgba(0,0,0,0.25); backdrop-filter: blur(4px); }
+  .portfolio-nav a:hover { background: var(--accent); color: #1b3a1f; }
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #1b3a1f; color: var(--text);
+    user-select: none;
+  }
+  #game-root { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+  canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+    background: linear-gradient(180deg, rgba(10,20,10,0.55), rgba(10,20,10,0.78));
+    text-align: center; padding: 24px; z-index: 10;
+  }
+  .hidden { display: none !important; }
+
+  .title {
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 800; color: var(--text);
+    text-shadow: 0 4px 0 rgba(0,0,0,0.25);
+    letter-spacing: 0.5px;
+  }
+  .subtitle { font-size: 14px; color: #d7f5c8; max-width: 320px; opacity: 0.9; }
+
+  .btn {
+    border: none; cursor: pointer; font-weight: 700; font-size: 16px;
+    padding: 12px 28px; border-radius: 999px; color: #1b3a1f;
+    background: var(--accent); box-shadow: 0 6px 0 #c79a30, 0 10px 18px rgba(0,0,0,0.3);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #c79a30, 0 4px 10px rgba(0,0,0,0.3); }
+  .btn.secondary {
+    background: rgba(255,255,255,0.12); color: var(--text);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  .panel {
+    background: var(--ui-bg); border-radius: 18px; padding: 22px 26px;
+    max-width: 360px; width: 90%; backdrop-filter: blur(4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  }
+  .stat-row { display: flex; justify-content: space-between; font-size: 14px; margin: 4px 0; color: #e8ffe0; }
+  .stat-row b { color: var(--accent); }
+
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0; display: flex;
+    justify-content: space-between; align-items: flex-start; padding: 12px 14px;
+    pointer-events: none; z-index: 5; font-weight: 700;
+  }
+  .hud-pill {
+    background: rgba(15,30,15,0.55); padding: 6px 14px; border-radius: 999px;
+    font-size: 14px; backdrop-filter: blur(2px); margin-bottom: 6px;
+  }
+  .hud-left, .hud-right { display: flex; flex-direction: column; align-items: flex-start; pointer-events: auto; }
+  .hud-right { align-items: flex-end; }
+  .icon-btn {
+    pointer-events: auto; background: rgba(15,30,15,0.6); border: none; color: var(--text);
+    min-width: 34px; height: 34px; border-radius: 999px; font-size: 12px; padding: 0 10px; cursor: pointer; margin-left: 6px;
+  }
+
+  #combo-banner {
+    position: absolute; top: 70px; left: 50%; transform: translateX(-50%);
+    font-size: 20px; font-weight: 800; color: var(--accent); text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    opacity: 0; transition: opacity 0.15s ease, transform 0.15s ease; pointer-events: none; z-index: 6;
+  }
+  #combo-banner.show { opacity: 1; transform: translateX(-50%) translateY(4px); }
+
+  #joystick {
+    position: absolute; bottom: 26px; left: 26px; width: 110px; height: 110px;
+    border-radius: 50%; background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.25);
+    z-index: 5; touch-action: none;
+  }
+  #joystick-knob {
+    position: absolute; width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255,255,255,0.55); top: 32px; left: 32px; pointer-events: none;
+  }
+
+  .achv-toast {
+    position: absolute; top: 110px; left: 50%; transform: translateX(-50%) translateY(-10px);
+    background: rgba(15,30,15,0.85); border: 1px solid var(--accent); border-radius: 12px;
+    padding: 8px 16px; font-size: 13px; opacity: 0; transition: all 0.25s ease; z-index: 8; pointer-events: none;
+  }
+  .achv-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 600px) {
+    .panel { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<nav class="portfolio-nav" aria-label="Game page navigation">
+  <a href="../../index.html">Back to Portfolio</a>
+  <a href="../flappy/">Play Flappy Developer</a>
+</nav>
+<div id="game-root">
+  <canvas id="game-canvas"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="hud-left">
+      <div class="hud-pill">Score: <span id="hud-score">0</span></div>
+      <div class="hud-pill">Best: <span id="hud-best">0</span></div>
+    </div>
+    <div class="hud-right">
+      <div style="display:flex;">
+        <button class="icon-btn" id="btn-pause" title="Pause">||</button>
+        <button class="icon-btn" id="btn-mute" title="Mute">Sound</button>
+      </div>
+      <div class="hud-pill" style="margin-top:6px;">Time: <span id="hud-time">0.0</span>s</div>
+    </div>
+  </div>
+
+  <div id="combo-banner"></div>
+  <div id="achv-toast" class="achv-toast"></div>
+
+  <div id="joystick" class="hidden">
+    <div id="joystick-knob"></div>
+  </div>
+
+  <!-- Main Menu -->
+  <div id="screen-menu" class="overlay">
+    <div class="title">Don't Step<br/>on the Frog</div>
+    <div class="panel">
+      <div class="subtitle">Roam the meadow, dodge the frogs, and survive as long as you can. Near misses earn bonus points - get greedy.</div>
+      <div class="stat-row" style="margin-top:10px;"><span>High Score</span><b id="menu-best">0</b></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-play">Play</button>
+      <button class="btn secondary" id="btn-howto">How to Play</button>
+    </div>
+  </div>
+
+  <!-- How to Play -->
+  <div id="screen-howto" class="overlay hidden">
+    <div class="panel">
+      <div class="title" style="font-size:22px;">How to Play</div>
+      <p class="subtitle">Move with WASD / Arrow Keys (desktop) or the joystick (mobile).</p>
+      <p class="subtitle">Avoid touching frogs - one touch ends your run.</p>
+      <p class="subtitle">Survive for points. Brush past a frog closely without touching it for a <b>Near Miss bonus</b>. Chain near misses for a combo multiplier.</p>
+      <p class="subtitle">Difficulty ramps up every 20 seconds - more frogs, faster hops.</p>
+    </div>
+    <button class="btn" id="btn-howto-back">Back</button>
+  </div>
+
+  <!-- Pause -->
+  <div id="screen-pause" class="overlay hidden">
+    <div class="title" style="font-size:28px;">Paused</div>
+    <div class="btn-row">
+      <button class="btn" id="btn-resume">Resume</button>
+      <button class="btn secondary" id="btn-pause-menu">Main Menu</button>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="screen-gameover" class="overlay hidden">
+    <div class="title" style="font-size:30px; color:#ffb3b3;">Squashed!</div>
+    <div class="panel">
+      <div class="stat-row"><span>Final Score</span><b id="go-score">0</b></div>
+      <div class="stat-row"><span>High Score</span><b id="go-best">0</b></div>
+      <div class="stat-row"><span>Time Survived</span><b id="go-time">0.0s</b></div>
+      <div class="stat-row"><span>Near Misses</span><b id="go-misses">0</b></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="btn-retry">Play Again</button>
+      <button class="btn secondary" id="btn-gameover-menu">Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- Setup ----------
+  const canvas = document.getElementById("game-canvas");
+  const ctx = canvas.getContext("2d");
+  const root = document.getElementById("game-root");
+
+  function resize() {
+    canvas.width = root.clientWidth * devicePixelRatio;
+    canvas.height = root.clientHeight * devicePixelRatio;
+    canvas.style.width = root.clientWidth + "px";
+    canvas.style.height = root.clientHeight + "px";
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  const STORE_KEY = "frogGame_highScore_v1";
+  const ACHV_KEY = "frogGame_achievements_v1";
+  let highScore = Number(localStorage.getItem(STORE_KEY) || 0);
+  let achievements = JSON.parse(localStorage.getItem(ACHV_KEY) || "{}");
+
+  function saveHigh(v) {
+    highScore = Math.max(highScore, v);
+    try { localStorage.setItem(STORE_KEY, String(highScore)); } catch (e) {}
+  }
+  function unlockAchievement(key, label) {
+    if (achievements[key]) return;
+    achievements[key] = true;
+    try { localStorage.setItem(ACHV_KEY, JSON.stringify(achievements)); } catch (e) {}
+    showAchvToast("Achievement: " + label);
+  }
+
+  // ---------- DOM refs ----------
+  const screens = {
+    menu: document.getElementById("screen-menu"),
+    howto: document.getElementById("screen-howto"),
+    pause: document.getElementById("screen-pause"),
+    gameover: document.getElementById("screen-gameover"),
+  };
+  const hud = document.getElementById("hud");
+  const joystickEl = document.getElementById("joystick");
+  const joystickKnob = document.getElementById("joystick-knob");
+  const comboBanner = document.getElementById("combo-banner");
+  const achvToastEl = document.getElementById("achv-toast");
+
+  function showScreen(name) {
+    Object.values(screens).forEach((s) => s.classList.add("hidden"));
+    if (name) screens[name].classList.remove("hidden");
+  }
+  function showAchvToast(text) {
+    achvToastEl.textContent = text;
+    achvToastEl.classList.add("show");
+    clearTimeout(showAchvToast._t);
+    showAchvToast._t = setTimeout(() => achvToastEl.classList.remove("show"), 2200);
+  }
+
+  document.getElementById("menu-best").textContent = highScore;
+
+  // ---------- Audio (lightweight synthesized SFX, no asset files) ----------
+  let audioCtx = null;
+  let muted = false;
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  function beep(freq, dur, type = "sine", gain = 0.12) {
+    if (muted) return;
+    try {
+      ensureAudio();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = gain;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.stop(audioCtx.currentTime + dur);
+    } catch (e) {}
+  }
+  const sfx = {
+    hop: () => beep(440 + Math.random() * 80, 0.08, "triangle", 0.05),
+    nearMiss: () => beep(880, 0.12, "sine", 0.08),
+    gameOver: () => { beep(180, 0.4, "sawtooth", 0.15); setTimeout(() => beep(90, 0.5, "sawtooth", 0.12), 120); },
+    click: () => beep(600, 0.05, "square", 0.04),
+    milestone: () => { beep(660, 0.1, "sine", 0.08); setTimeout(() => beep(880, 0.12, "sine", 0.08), 90); },
+  };
+
+  // ---------- Input ----------
+  const keys = {};
+  window.addEventListener("keydown", (e) => { keys[e.key.toLowerCase()] = true; });
+  window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
+
+  let joyVec = { x: 0, y: 0 };
+  let joyActive = false;
+  let joyTouchId = null;
+  joystickEl.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    joyTouchId = t.identifier;
+    joyActive = true;
+  }, { passive: false });
+  window.addEventListener("touchmove", (e) => {
+    if (!joyActive) return;
+    for (const t of e.changedTouches) {
+      if (t.identifier !== joyTouchId) continue;
+      const rect = joystickEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      let dx = t.clientX - cx, dy = t.clientY - cy;
+      const max = rect.width / 2;
+      const dist = Math.min(max, Math.hypot(dx, dy));
+      const ang = Math.atan2(dy, dx);
+      dx = Math.cos(ang) * dist; dy = Math.sin(ang) * dist;
+      joyVec.x = dx / max; joyVec.y = dy / max;
+      joystickKnob.style.left = 32 + dx + "px";
+      joystickKnob.style.top = 32 + dy + "px";
+    }
+  }, { passive: false });
+  window.addEventListener("touchend", (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) {
+        joyActive = false; joyTouchId = null; joyVec = { x: 0, y: 0 };
+        joystickKnob.style.left = "32px"; joystickKnob.style.top = "32px";
+      }
+    }
+  });
+
+  // ---------- Game constants ----------
+  const PLAYER_RADIUS = 16;
+  const PLAYER_SPEED = 220; // px/sec
+  const FROG_RADIUS = 14;
+  const NEAR_MISS_DIST = 34; // distance threshold beyond touch radius for bonus
+  const TOUCH_DIST = PLAYER_RADIUS + FROG_RADIUS - 6;
+
+  // ---------- Game state ----------
+  let state = "menu"; // menu | playing | paused | gameover
+  let player, frogs, particles, floaters;
+  let score, elapsed, nearMisses, comboCount, comboTimer, lastDifficultyTier;
+  let shake = 0;
+  let frogSpawnAcc = 0;
+  let lastFrameTs = 0;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function resetGame() {
+    player = {
+      x: root.clientWidth / 2, y: root.clientHeight / 2,
+      vx: 0, vy: 0, facing: 1, bob: 0, recentlyNearMissed: new Set(),
+    };
+    frogs = [];
+    particles = [];
+    floaters = [];
+    score = 0;
+    elapsed = 0;
+    nearMisses = 0;
+    comboCount = 0;
+    comboTimer = 0;
+    lastDifficultyTier = 0;
+    frogSpawnAcc = 0;
+    spawnInitialFrogs();
+  }
+
+  function spawnInitialFrogs() {
+    for (let i = 0; i < 6; i++) spawnFrog();
+  }
+
+  function spawnFrog() {
+    const w = root.clientWidth, h = root.clientHeight;
+    let x, y, tries = 0;
+    do {
+      x = rand(40, w - 40);
+      y = rand(100, h - 60);
+      tries++;
+    } while (Math.hypot(x - player.x, y - player.y) < 120 && tries < 10);
+
+    frogs.push({
+      x, y,
+      baseX: x, baseY: y,
+      state: "idle", // idle | hopping
+      hopTimer: rand(1, 3),
+      hopProgress: 0,
+      hopFrom: { x, y },
+      hopTo: { x, y },
+      blink: 0,
+      scale: 1,
+      ripple: 0,
+      wasNearMissedThisRun: false,
+    });
+  }
+
+  function difficultyTier() {
+    return Math.floor(elapsed / 20);
+  }
+  function frogTargetCount() {
+    return Math.min(26, 6 + difficultyTier() * 3);
+  }
+  function frogHopSpeedMul() {
+    return 1 + difficultyTier() * 0.18;
+  }
+
+  // ---------- Update ----------
+  function updatePlayer(dt) {
+    let dx = 0, dy = 0;
+    if (keys["arrowleft"] || keys["a"]) dx -= 1;
+    if (keys["arrowright"] || keys["d"]) dx += 1;
+    if (keys["arrowup"] || keys["w"]) dy -= 1;
+    if (keys["arrowdown"] || keys["s"]) dy += 1;
+    if (joyActive) { dx += joyVec.x; dy += joyVec.y; }
+
+    const len = Math.hypot(dx, dy);
+    if (len > 0.001) { dx /= len; dy /= len; player.facing = dx >= 0 ? 1 : -1; }
+
+    const targetVx = dx * PLAYER_SPEED;
+    const targetVy = dy * PLAYER_SPEED;
+    player.vx += (targetVx - player.vx) * Math.min(1, dt * 8);
+    player.vy += (targetVy - player.vy) * Math.min(1, dt * 8);
+
+    player.x += player.vx * dt;
+    player.y += player.vy * dt;
+
+    const w = root.clientWidth, h = root.clientHeight;
+    player.x = Math.max(PLAYER_RADIUS, Math.min(w - PLAYER_RADIUS, player.x));
+    player.y = Math.max(70, Math.min(h - 30, player.y));
+
+    player.bob += dt * (4 + Math.hypot(player.vx, player.vy) * 0.02);
+
+    if (Math.hypot(player.vx, player.vy) > 20 && Math.random() < 0.3) {
+      particles.push({
+        x: player.x, y: player.y + 14, vx: rand(-20, 20), vy: rand(-10, 10),
+        life: 0.5, maxLife: 0.5, color: "rgba(120,90,50,0.4)", size: rand(3, 6),
+      });
+    }
+  }
+
+  function updateFrog(f, dt) {
+    f.blink -= dt;
+    if (f.blink <= 0) f.blink = rand(2, 5);
+
+    if (f.state === "idle") {
+      f.hopTimer -= dt;
+      if (f.hopTimer <= 0) {
+        const tier = difficultyTier();
+        const hopChance = Math.min(0.95, 0.35 + tier * 0.12);
+        if (Math.random() < hopChance) {
+          const w = root.clientWidth, h = root.clientHeight;
+          const dist = rand(40, 110);
+          const ang = rand(0, Math.PI * 2);
+          let nx = f.x + Math.cos(ang) * dist;
+          let ny = f.y + Math.sin(ang) * dist;
+          nx = Math.max(30, Math.min(w - 30, nx));
+          ny = Math.max(90, Math.min(h - 50, ny));
+          f.hopFrom = { x: f.x, y: f.y };
+          f.hopTo = { x: nx, y: ny };
+          f.hopProgress = 0;
+          f.state = "hopping";
+          sfx.hop();
+        }
+        f.hopTimer = rand(1, 3) / frogHopSpeedMul();
+      }
+    } else {
+      f.hopProgress += dt * 2.6 * frogHopSpeedMul();
+      const t = Math.min(1, f.hopProgress);
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      f.x = f.hopFrom.x + (f.hopTo.x - f.hopFrom.x) * ease;
+      f.y = f.hopFrom.y + (f.hopTo.y - f.hopFrom.y) * ease;
+      f.scale = 1 + Math.sin(t * Math.PI) * 0.35;
+      if (t >= 1) {
+        f.state = "idle";
+        f.scale = 1;
+        f.ripple = 1;
+        f.hopTimer = rand(0.6, 2) / frogHopSpeedMul();
+      }
+    }
+    if (f.ripple > 0) f.ripple -= dt * 2;
+  }
+
+  function spawnFloater(x, y, text, color) {
+    floaters.push({ x, y, text, color, life: 1, vy: -40 });
+  }
+
+  function checkCollisions() {
+    for (const f of frogs) {
+      const d = Math.hypot(f.x - player.x, f.y - player.y);
+      if (d < TOUCH_DIST) {
+        triggerGameOver();
+        return;
+      }
+      if (d < NEAR_MISS_DIST && !f.wasNearMissedThisRun) {
+        f.wasNearMissedThisRun = true;
+        registerNearMiss(f);
+      }
+      if (d > NEAR_MISS_DIST * 1.6) {
+        f.wasNearMissedThisRun = false;
+      }
+    }
+  }
+
+  function registerNearMiss(f) {
+    nearMisses += 1;
+    comboCount += 1;
+    comboTimer = 1.4;
+    const mult = Math.min(4, 1 + Math.floor(comboCount / 2));
+    const bonus = 10 * mult;
+    score += bonus;
+    spawnFloater(f.x, f.y - 10, "+" + bonus, "#ffd166");
+    sfx.nearMiss();
+    if (comboCount >= 2) {
+      comboBanner.textContent = "Combo x" + mult + "!";
+      comboBanner.classList.add("show");
+      clearTimeout(registerNearMiss._t);
+      registerNearMiss._t = setTimeout(() => comboBanner.classList.remove("show"), 700);
+    }
+    if (nearMisses === 100) unlockAchievement("near100", "100 Near Misses");
+  }
+
+  function triggerGameOver() {
+    state = "gameover";
+    shake = 18;
+    sfx.gameOver();
+    saveHigh(Math.floor(score));
+    document.getElementById("go-score").textContent = Math.floor(score);
+    document.getElementById("go-best").textContent = highScore;
+    document.getElementById("go-time").textContent = elapsed.toFixed(1) + "s";
+    document.getElementById("go-misses").textContent = nearMisses;
+    document.getElementById("hud-best").textContent = highScore;
+    showScreen("gameover");
+    hud.classList.add("hidden");
+    joystickEl.classList.add("hidden");
+
+    unlockAchievement("first", "First Game");
+    if (score >= 100) unlockAchievement("s100", "100 Points");
+    if (score >= 500) unlockAchievement("s500", "500 Points");
+    if (score >= 1000) unlockAchievement("s1000", "1000 Points");
+    if (elapsed >= 600) unlockAchievement("t10m", "10 Minute Survivor");
+  }
+
+  function update(dt) {
+    if (state !== "playing") return;
+    elapsed += dt;
+    score += dt * 5; // base survival points
+
+    updatePlayer(dt);
+    for (const f of frogs) updateFrog(f, dt);
+
+    // difficulty scaling: adjust frog count
+    const target = frogTargetCount();
+    frogSpawnAcc += dt;
+    if (frogs.length < target && frogSpawnAcc > 0.35) {
+      frogSpawnAcc = 0;
+      spawnFrog();
+    }
+    const tier = difficultyTier();
+    if (tier > lastDifficultyTier) {
+      lastDifficultyTier = tier;
+      spawnFloater(player.x, player.y - 30, "Speeding up!", "#ff8fa3");
+    }
+
+    if (comboTimer > 0) {
+      comboTimer -= dt;
+      if (comboTimer <= 0) comboCount = 0;
+    }
+
+    // milestone sound every 100 pts
+    const milestone = Math.floor(score / 100);
+    if (milestone > (update._lastMilestone || 0)) {
+      update._lastMilestone = milestone;
+      sfx.milestone();
+    }
+
+    checkCollisions();
+
+    particles.forEach((p) => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; });
+    particles = particles.filter((p) => p.life > 0);
+
+    floaters.forEach((fl) => { fl.y += fl.vy * dt; fl.life -= dt * 1.2; });
+    floaters = floaters.filter((fl) => fl.life > 0);
+
+    if (shake > 0) shake = Math.max(0, shake - dt * 60);
+
+    document.getElementById("hud-score").textContent = Math.floor(score);
+    document.getElementById("hud-time").textContent = elapsed.toFixed(1);
+  }
+
+  // ---------- Render ----------
+  function drawBackground(t) {
+    const w = root.clientWidth, h = root.clientHeight;
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, "#8fe46c");
+    grad.addColorStop(1, "#5fbf3f");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    // grass texture dots
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    for (let i = 0; i < 40; i++) {
+      const gx = (i * 137 + (t * 6) % 200) % w;
+      const gy = (i * 71) % h;
+      ctx.fillRect(gx, gy, 2, 8);
+    }
+
+    // floating leaves
+    for (let i = 0; i < 6; i++) {
+      const lx = (i * 220 + t * 12) % (w + 60) - 30;
+      const ly = 40 + ((i * 90 + t * 8) % (h - 40));
+      ctx.save();
+      ctx.translate(lx, ly);
+      ctx.rotate(Math.sin(t * 0.5 + i) * 0.5);
+      ctx.fillStyle = "rgba(255,255,255,0.18)";
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 7, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // tiny flowers
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    for (let i = 0; i < 14; i++) {
+      const fx = (i * 173) % w;
+      const fy = (i * 251) % h;
+      ctx.beginPath();
+      ctx.arc(fx, fy, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawFrog(f) {
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.scale(f.scale, 1 / f.scale * f.scale);
+
+    if (f.ripple > 0) {
+      ctx.strokeStyle = `rgba(255,255,255,${f.ripple * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 18 * (1.6 - f.ripple), 8 * (1.6 - f.ripple), 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.beginPath();
+    ctx.ellipse(0, FROG_RADIUS - 2, FROG_RADIUS * 0.8, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // body
+    ctx.fillStyle = f.wasNearMissedThisRun ? "#ffe27a" : "#3fae46";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, FROG_RADIUS, FROG_RADIUS * 0.78, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // eyes
+    const blinking = f.blink < 0.12;
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(-6, -8, 4.5, 0, Math.PI * 2);
+    ctx.arc(6, -8, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    if (!blinking) {
+      ctx.fillStyle = "#1b3a1f";
+      ctx.beginPath();
+      ctx.arc(-6, -8, 2, 0, Math.PI * 2);
+      ctx.arc(6, -8, 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.strokeStyle = "#1b3a1f";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-9, -8); ctx.lineTo(-3, -8);
+      ctx.moveTo(3, -8); ctx.lineTo(9, -8);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawPlayer() {
+    const bobY = Math.sin(player.bob) * 3;
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.scale(player.facing, 1);
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.beginPath();
+    ctx.ellipse(0, PLAYER_RADIUS - 2, PLAYER_RADIUS * 0.85, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.translate(0, bobY);
+
+    // body
+    ctx.fillStyle = "#ff7a59";
+    ctx.beginPath();
+    ctx.arc(0, 0, PLAYER_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#c14e33";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // face
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(6, -4, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1b3a1f";
+    ctx.beginPath();
+    ctx.arc(7, -4, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFloaters() {
+    for (const fl of floaters) {
+      ctx.globalAlpha = Math.max(0, fl.life);
+      ctx.fillStyle = fl.color;
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(fl.text, fl.x, fl.y);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function render(t) {
+    const w = root.clientWidth, h = root.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.save();
+    if (shake > 0) {
+      ctx.translate(rand(-shake, shake), rand(-shake, shake));
+    }
+    if (state === "gameover" && shake > 6) {
+      ctx.fillStyle = `rgba(255,0,0,${(shake / 18) * 0.25})`;
+    }
+
+    drawBackground(t / 1000);
+    if (frogs) for (const f of frogs) drawFrog(f);
+    if (particles) drawParticles();
+    if (player && state !== "menu") drawPlayer();
+    if (floaters) drawFloaters();
+
+    if (state === "gameover" && shake > 6) {
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.restore();
+  }
+
+  // ---------- Loop ----------
+  function loop(ts) {
+    if (!lastFrameTs) lastFrameTs = ts;
+    const dt = Math.min(0.05, (ts - lastFrameTs) / 1000);
+    lastFrameTs = ts;
+    update(dt);
+    render(ts);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  // ---------- Screen / button wiring ----------
+  function startGame() {
+    sfx.click();
+    resetGame();
+    state = "playing";
+    showScreen(null);
+    hud.classList.remove("hidden");
+    if ("ontouchstart" in window) joystickEl.classList.remove("hidden");
+    document.getElementById("hud-best").textContent = highScore;
+  }
+
+  document.getElementById("btn-play").addEventListener("click", startGame);
+  document.getElementById("btn-retry").addEventListener("click", startGame);
+
+  document.getElementById("btn-howto").addEventListener("click", () => { sfx.click(); showScreen("howto"); });
+  document.getElementById("btn-howto-back").addEventListener("click", () => { sfx.click(); showScreen("menu"); });
+
+  document.getElementById("btn-pause").addEventListener("click", () => {
+    if (state !== "playing") return;
+    sfx.click();
+    state = "paused";
+    showScreen("pause");
+  });
+  document.getElementById("btn-resume").addEventListener("click", () => {
+    sfx.click();
+    state = "playing";
+    showScreen(null);
+  });
+  document.getElementById("btn-pause-menu").addEventListener("click", () => {
+    sfx.click();
+    state = "menu";
+    hud.classList.add("hidden");
+    joystickEl.classList.add("hidden");
+    showScreen("menu");
+    document.getElementById("menu-best").textContent = highScore;
+  });
+  document.getElementById("btn-gameover-menu").addEventListener("click", () => {
+    sfx.click();
+    state = "menu";
+    showScreen("menu");
+    document.getElementById("menu-best").textContent = highScore;
+  });
+
+  document.getElementById("btn-mute").addEventListener("click", (e) => {
+    muted = !muted;
+    e.target.textContent = muted ? "Muted" : "Sound";
+  });
+
+  // pause with Escape
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state === "playing") {
+      document.getElementById("btn-pause").click();
+    }
+  });
+})();
+</script>
+</body>
+</html>

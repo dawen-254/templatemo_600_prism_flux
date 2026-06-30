@@ -1,0 +1,219 @@
+.flappy-page {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.flappy-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px clamp(18px, 4vw, 42px);
+    background: rgba(10, 10, 10, 0.88);
+    border-bottom: 1px solid var(--metal-dark);
+    backdrop-filter: blur(16px);
+}
+
+.flappy-back,
+.flappy-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 800;
+    padding: 10px 14px;
+    border: 1px solid var(--metal-dark);
+    border-radius: 6px;
+    background: rgba(42, 42, 42, 0.65);
+    transition: all 0.25s ease;
+}
+
+.flappy-back:hover,
+.flappy-link:hover {
+    border-color: var(--accent-purple);
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-red));
+}
+
+.flappy-shell {
+    width: min(1180px, calc(100% - 32px));
+    min-height: calc(100vh - 76px);
+    margin: 0 auto;
+    padding: 58px 0;
+    display: grid;
+    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 480px);
+    gap: 44px;
+    align-items: center;
+}
+
+.flappy-copy h1 {
+    font-size: clamp(42px, 8vw, 76px);
+    line-height: 0.98;
+    margin: 12px 0 22px;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan) 48%, var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.flappy-copy p {
+    color: var(--text-secondary);
+    font-size: 18px;
+    line-height: 1.65;
+    max-width: 620px;
+}
+
+.flappy-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+}
+
+.flappy-meta span {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(111, 255, 233, 0.28);
+    background: rgba(111, 255, 233, 0.06);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.flappy-game-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.game-frame {
+    position: relative;
+    width: min(480px, 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #1e293b;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+    background: #0f172a;
+    touch-action: manipulation;
+}
+
+#flappyCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+}
+
+.game-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    background: rgba(2, 6, 23, 0.72);
+    backdrop-filter: blur(2px);
+}
+
+.game-overlay h2 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 30px;
+}
+
+.game-overlay p {
+    margin: 4px 0;
+    max-width: 290px;
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.score-line {
+    color: #fbbf24 !important;
+    font-size: 22px !important;
+    font-weight: 900;
+}
+
+.game-badge {
+    margin-top: 8px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #38bdf8;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.game-toast {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 8px 14px;
+    border-radius: 8px;
+    color: #e2e8f0;
+    background: #0f172a;
+    border: 1px solid #38bdf8;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+    font-size: 13px;
+    z-index: 3;
+}
+
+.game-toast.achievement {
+    top: 64px;
+    border-color: #fbbf24;
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.22);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.game-help {
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+}
+
+@media (max-width: 940px) {
+    .flappy-shell {
+        grid-template-columns: 1fr;
+        padding-top: 42px;
+    }
+
+    .flappy-copy {
+        text-align: center;
+    }
+
+    .flappy-copy p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .flappy-meta {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 520px) {
+    .flappy-header {
+        padding: 14px;
+    }
+
+    .flappy-back,
+    .flappy-link {
+        padding: 9px 10px;
+        font-size: 13px;
+    }
+
+    .flappy-shell {
+        width: min(100% - 20px, 1180px);
+        gap: 28px;
+    }
+}

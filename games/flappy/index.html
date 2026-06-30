@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Developer | Carlos Fordham</title>
+    <link rel="stylesheet" href="../../templatemo-prism-flux.css">
+    <link rel="stylesheet" href="flappy-style.css">
+</head>
+<body class="flappy-page">
+    <header class="flappy-header">
+        <a href="../../index.html" class="flappy-back">Back to Portfolio</a>
+        <a href="../../index.html#projects" class="flappy-link">Projects</a>
+    </header>
+
+    <main class="flappy-shell">
+        <section class="flappy-copy">
+            <p class="hero-kicker">Playable Portfolio Sample</p>
+            <h1>Flappy Developer</h1>
+            <p>
+                A Flappy Bird-style arcade prototype adapted from Carlos Fordham's FlappyDeveloper.tsx component.
+                Click, tap, or press Space to keep the developer icon flying through the code brackets.
+            </p>
+            <div class="flappy-meta">
+                <span>Canvas gameplay</span>
+                <span>Local high score</span>
+                <span>Collision logic</span>
+                <span>Difficulty ramp</span>
+            </div>
+        </section>
+
+        <section class="flappy-game-card" aria-label="Flappy Developer playable game">
+            <div class="game-frame" id="gameFrame">
+                <canvas id="flappyCanvas" width="480" height="640" aria-label="Flappy Developer game canvas"></canvas>
+                <div class="game-overlay" id="readyOverlay">
+                    <h2>Flappy Developer</h2>
+                    <p>Tap, click, or press Space to fly through the brackets.</p>
+                    <p>Unlock a new skill every 5 points.</p>
+                    <span class="game-badge" id="readyHighScore">High Score: 0</span>
+                </div>
+                <div class="game-overlay hidden" id="gameOverOverlay">
+                    <h2>Game Over</h2>
+                    <p class="score-line" id="finalScore">Score: 0</p>
+                    <span class="game-badge" id="gameOverHighScore">High Score: 0</span>
+                    <p>Tap to try again</p>
+                </div>
+                <div class="game-toast hidden" id="skillToast"></div>
+                <div class="game-toast achievement hidden" id="achievementToast"></div>
+            </div>
+
+            <p class="game-help">Space / Click / Tap to flap. High score saves locally in this browser.</p>
+        </section>
+    </main>
+
+    <script src="flappy-game.js"></script>
+</body>
+</html>

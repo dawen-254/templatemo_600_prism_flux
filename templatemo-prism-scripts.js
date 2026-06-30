@@ -15,14 +15,16 @@ const portfolioData = [
         title: 'Flappy Bird-Style Prototype',
         description: 'Tap-to-jump arcade gameplay with pipe gaps, scoring, collision detection, and quick restart flow.',
         image: 'images/flappy bird.jpg',
-        tech: ['Arcade Loop', 'Physics', 'Scoring']
+        tech: ['Arcade Loop', 'Physics', 'Scoring'],
+        url: 'games/flappy/'
     },
     {
         id: 2,
         title: "Don't Step on the Frog",
         description: 'Reaction-based casual game built around target avoidance, timing pressure, and clear player feedback.',
         image: 'images/dont step on the frog.jpg',
-        tech: ['Casual Game', 'Timing', 'Input Rules']
+        tech: ['Casual Game', 'Timing', 'Input Rules'],
+        url: 'games/dont-step-on-the-frog/'
     },
     {
         id: 3,
@@ -130,7 +132,7 @@ function createCarouselItem(data, index) {
             <h3 class="card-title">${data.title}</h3>
             <p class="card-description">${data.description}</p>
             <div class="card-tech">${techBadges}</div>
-            <button class="card-cta" onclick="scrollToSection('projects')">View Project</button>
+            ${data.url ? `<a class="card-cta" href="${data.url}">Play Game</a>` : `<button class="card-cta" onclick="scrollToSection('projects')">View Project</button>`}
         </div>
     `;
     
@@ -333,8 +335,15 @@ const navLinks = document.querySelectorAll('.nav-link');
 
 navLinks.forEach(link => {
     link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href') || '';
+        if (!href.startsWith('#')) {
+            navMenu.classList.remove('active');
+            menuToggle.classList.remove('active');
+            return;
+        }
+
         e.preventDefault();
-        const targetId = this.getAttribute('href').substring(1);
+        const targetId = href.substring(1);
         const targetSection = document.getElementById(targetId);
         
         if (targetSection) {
@@ -363,8 +372,8 @@ function updateActiveNav() {
         if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
             navLinks.forEach(link => {
                 link.classList.remove('active');
-                const href = link.getAttribute('href').substring(1);
-                if (href === sectionId) {
+                const href = link.getAttribute('href') || '';
+                if (href.startsWith('#') && href.substring(1) === sectionId) {
                     link.classList.add('active');
                 }
             });
