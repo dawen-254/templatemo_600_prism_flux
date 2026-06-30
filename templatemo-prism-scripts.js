@@ -12,52 +12,52 @@ https://templatemo.com/tm-600-prism-flux
 const portfolioData = [
     {
         id: 1,
-        title: 'Godot Scene Kit',
-        description: 'Reusable scene structures for interactive gameplay tests, UI states, and asset validation in Godot projects.',
-        image: 'images/ar-interface.jpg',
-        tech: ['Godot', 'GDScript', 'Scene QA']
+        title: 'Flappy Bird-Style Prototype',
+        description: 'Tap-to-jump arcade gameplay with pipe gaps, scoring, collision detection, and quick restart flow.',
+        image: 'images/flappy bird.jpg',
+        tech: ['Arcade Loop', 'Physics', 'Scoring']
     },
     {
         id: 2,
-        title: 'Solar2D Prototype Loop',
-        description: 'Fast 2D iteration workflow for touch controls, sprite placement, collision checks, and lightweight build reviews.',
-        image: 'images/iot-matrix.jpg',
-        tech: ['Solar2D', 'Lua', 'Mobile 2D']
+        title: "Don't Step on the Frog",
+        description: 'Reaction-based casual game built around target avoidance, timing pressure, and clear player feedback.',
+        image: 'images/dont step on the frog.jpg',
+        tech: ['Casual Game', 'Timing', 'Input Rules']
     },
     {
         id: 3,
-        title: 'Asset Refinement Pass',
-        description: 'Organized review process for sprites, UI elements, export sizes, naming consistency, and handoff-ready folders.',
-        image: 'images/data-nexus.jpg',
-        tech: ['Sprites', 'UI Assets', 'Exports']
+        title: 'Space Shooter Systems',
+        description: 'Shooter prototypes with player movement, enemy waves, projectile logic, pickups, and score HUDs.',
+        image: 'images/space shooters.jpg',
+        tech: ['Projectiles', 'Enemy Waves', 'HUD']
     },
     {
         id: 4,
-        title: 'AI Research Review',
-        description: 'Side-by-side evaluation habits for generated assets, edge cases, visual defects, and clear research annotations.',
-        image: 'images/neural-network.jpg',
-        tech: ['AI Review', 'Annotation', 'QA Notes']
+        title: 'Black Myth: Wukong-Inspired Replica',
+        description: 'Ongoing action RPG study focused on third-person combat, boss pacing, cinematic mood, and encounter flow.',
+        image: 'images/black myth wukong.jpg',
+        tech: ['Action RPG', 'Combat Study', 'Ongoing']
     },
     {
         id: 5,
-        title: 'Performance QA',
-        description: 'Functional checks for frame pacing, build stability, asset loading, and repeatable reproduction notes.',
-        image: 'images/cyber-defense.jpg',
-        tech: ['Testing', 'Optimization', 'Bug Reports']
+        title: 'Godot Scene Workflow',
+        description: 'Reusable scene structures for prototypes, UI states, collision checks, and gameplay iteration.',
+        image: 'images/neural-network.jpg',
+        tech: ['Godot', 'GDScript', 'Scenes']
     },
     {
         id: 6,
-        title: 'HUD And UI Systems',
-        description: 'Readable menus, heads-up displays, state feedback, and compact interface patterns for gameplay prototypes.',
+        title: 'Solar2D Mobile Loop',
+        description: 'Lightweight 2D workflow for touch controls, sprite placement, Lua scripting, and mobile-ready gameplay.',
         image: 'images/quantum-cloud.jpg',
-        tech: ['HUD', 'UX States', '2D Layout']
+        tech: ['Solar2D', 'Lua', 'Mobile 2D']
     },
     {
         id: 7,
-        title: 'Delivery Documentation',
-        description: 'Concise task notes, file maps, change summaries, and next-step recommendations for asynchronous teams.',
+        title: 'Prototype Polish Pass',
+        description: 'Gameplay tuning, readable UI feedback, bug notes, asset organization, and playtest-ready delivery.',
         image: 'images/blockchain-vault.jpg',
-        tech: ['Docs', 'Versioning', 'Remote Handoff']
+        tech: ['Playtesting', 'UI Feedback', 'Polish']
     }
 ];
 
@@ -67,14 +67,14 @@ const skillsData = [
     { name: 'Solar2D', icon: 'S2D', level: 88, category: 'engine' },
     { name: 'GDScript', icon: 'GDS', level: 86, category: 'scripting' },
     { name: 'Lua', icon: 'LUA', level: 84, category: 'scripting' },
+    { name: 'Arcade Physics', icon: 'PHY', level: 90, category: 'gameplay' },
+    { name: 'Collision Systems', icon: 'COL', level: 89, category: 'gameplay' },
+    { name: 'Enemy Waves', icon: 'WAV', level: 86, category: 'gameplay' },
+    { name: 'Combat Timing', icon: 'CBT', level: 80, category: 'gameplay' },
     { name: 'Sprite Prep', icon: 'SPR', level: 90, category: 'asset' },
-    { name: 'UI Assets', icon: 'UI', level: 88, category: 'asset' },
-    { name: 'Animation Sheets', icon: 'ANI', level: 82, category: 'asset' },
-    { name: 'Scene Layout', icon: 'SCN', level: 87, category: 'engine' },
-    { name: 'Playtesting', icon: 'QA', level: 91, category: 'research' },
-    { name: 'Asset Tagging', icon: 'TAG', level: 89, category: 'research' },
-    { name: 'AI Dataset QA', icon: 'AI', level: 86, category: 'research' },
-    { name: 'Remote Handoff', icon: 'DOC', level: 94, category: 'research' }
+    { name: 'HUD Design', icon: 'HUD', level: 88, category: 'asset' },
+    { name: 'Playtesting', icon: 'QA', level: 91, category: 'gameplay' },
+    { name: 'Prototype Notes', icon: 'DOC', level: 94, category: 'scripting' }
 ];
 
 // Scroll to section function
@@ -130,7 +130,7 @@ function createCarouselItem(data, index) {
             <h3 class="card-title">${data.title}</h3>
             <p class="card-description">${data.description}</p>
             <div class="card-tech">${techBadges}</div>
-            <button class="card-cta" onclick="scrollToSection('about')">Project Fit</button>
+            <button class="card-cta" onclick="scrollToSection('projects')">View Project</button>
         </div>
     `;
     
@@ -376,7 +376,7 @@ window.addEventListener('scroll', updateActiveNav);
 
 function animateCounter(element) {
     const target = parseInt(element.dataset.target);
-    const duration = 2000;
+    const duration = 1400;
     const step = target / (duration / 16);
     let current = 0;
     
@@ -420,7 +420,7 @@ contactForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const formData = new FormData(contactForm);
     const data = Object.fromEntries(formData);
-    alert(`Thank you ${data.name}. Your Project Touchstone note has been recorded for Carlos Fordham.`);
+    alert(`Thank you ${data.name}. Your game project note has been recorded for Carlos Fordham.`);
     contactForm.reset();
 });
 
@@ -429,12 +429,4 @@ window.addEventListener('load', () => {
         const loader = document.getElementById('loader');
         loader.classList.add('hidden');
     }, 1000);
-});
-
-window.addEventListener('scroll', () => {
-    const scrolled = window.pageYOffset;
-    const parallax = document.querySelector('.hero');
-    if (parallax) {
-        parallax.style.transform = `translateY(${scrolled * 0.2}px)`;
-    }
 });
